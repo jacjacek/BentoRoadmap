@@ -16,7 +16,7 @@
       --border: #e8e8e6;
       --border-faint: #f0f0ee;
       --text: #1a1a19;
-      --muted: #767676;
+      --muted: #6b6b6b;
       --faint: #999894;
       --subtle: #cccbc8;
       --accent: #4a8ef5;
@@ -506,7 +506,7 @@
 </head>
 <body>
 
-<div class="wrap" id="app"></div>
+<main class="wrap" id="app"></main>
 
 <script>
 (function () {
@@ -700,6 +700,9 @@
     const descEl = el('div', 'modal-desc');
     descEl.textContent = tile.description || '';
     descEl.dataset.placeholder = 'Add description…';
+    descEl.setAttribute('role', 'textbox');
+    descEl.setAttribute('aria-multiline', 'true');
+    descEl.setAttribute('aria-label', 'Tile description');
     makeEditable(descEl, {
       multiline: true,
       onBlur: (t) => { tile.description = t; saveState(); animatedRender(100); }
@@ -1054,6 +1057,8 @@
     // Description (3-line clamped; clamp is lifted while editing via CSS .editing .de)
     const de = el('span', 'de'); de.textContent = tile.description || '';
     de.dataset.placeholder = 'Add description…';
+    de.setAttribute('role', 'textbox');
+    de.setAttribute('aria-multiline', 'true');
     de.setAttribute('aria-label', 'Tile description');
     makeEditable(de, {
       multiline: true,
