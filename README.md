@@ -2,7 +2,10 @@
 
 A local-first, single-file product roadmap tool. No backend, no build step, no npm. Just open `index.html` in a browser and start planning.
 
-![Bento Roadmap screenshot](example.html)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="bentoroadmap-light.svg">
+  <img src="bentoroadmap-dark.svg" alt="Bento Roadmap logo" width="120">
+</picture>
 
 ## Features
 
