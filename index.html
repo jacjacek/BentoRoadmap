@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bento Roadmap</title>
   <meta name="description" content="Local-first bento grid roadmap for product managers.">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400&display=swap"></noscript>
   <style>
     :root {
       --bg: #f8f8f7;
@@ -263,14 +266,14 @@
       align-self: flex-start;
       margin-top: 4px;
       font-size: 11px;
-      color: var(--faint);
+      color: var(--muted);
       cursor: pointer;
       user-select: none;
       transition: color 0.15s;
       letter-spacing: 0.01em;
     }
 
-    .more-btn:hover { color: var(--muted); }
+    .more-btn:hover { color: var(--text); }
 
     /* ─── Modal ─── */
     .modal-overlay {
@@ -392,13 +395,13 @@
       font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--faint);
+      color: var(--muted);
       cursor: pointer;
       user-select: none;
       transition: color 0.15s;
     }
 
-    .st:hover { color: var(--muted); }
+    .st:hover { color: var(--text); }
 
     .done .st { color: var(--muted); }
     .done .t  { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--subtle); }
@@ -407,7 +410,7 @@
     .tg {
       font-size: 10px;
       font-family: 'JetBrains Mono', monospace;
-      color: var(--faint);
+      color: var(--muted);
       margin-left: auto;
       outline: none;
       border-radius: 3px;
@@ -477,8 +480,8 @@
 
     .gh span {
       font-size: 16px;
-      color: var(--faint);
-      opacity: 0.25;
+      color: var(--muted);
+      opacity: 0.35;
       font-weight: 300;
       transition: opacity 0.15s;
       user-select: none;
@@ -676,13 +679,19 @@
   // ─── Modal ─────────────────────────────────────────────────────────────────
   function openModal(tile) {
     const overlay = el('div', 'modal-overlay');
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'modal-title-' + tile.id);
+
     const modal = el('div', 'modal');
 
     const closeBtn = el('button', 'modal-close');
     closeBtn.textContent = '×';
+    closeBtn.setAttribute('aria-label', 'Close dialog');
     closeBtn.addEventListener('click', () => closeModal(overlay));
 
     const titleEl = el('div', 'modal-title');
+    titleEl.id = 'modal-title-' + tile.id;
     titleEl.textContent = tile.title;
     makeEditable(titleEl, {
       onBlur: (t) => { tile.title = t || 'Untitled'; saveState(); animatedRender(100); }
@@ -700,16 +709,21 @@
 
     const st = el('span', 'st');
     st.textContent = tile.status;
-    st.title = 'Click to change status';
+    st.setAttribute('role', 'button');
+    st.setAttribute('tabindex', '0');
+    st.setAttribute('aria-label', `Status: ${tile.status}. Click to change`);
     st.addEventListener('click', () => {
       cycleStatus(tile);
       st.textContent = tile.status;
+      st.setAttribute('aria-label', `Status: ${tile.status}. Click to change`);
       saveState(); animatedRender(100);
     });
+    st.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); st.click(); } });
 
     const tg = el('span', 'tg');
     tg.textContent = tile.tag || '';
     tg.dataset.placeholder = 'tag';
+    tg.setAttribute('aria-label', 'Tile tag');
     makeEditable(tg, { onBlur: (t) => { tile.tag = t; saveState(); } });
 
     footer.append(st, tg);
@@ -849,12 +863,13 @@
     const header = el('div', 'header');
     const h1 = el('h1');
     h1.textContent = state.title;
+    h1.setAttribute('aria-label', 'Roadmap title');
     makeEditable(h1, { onBlur: (t) => { state.title = t || 'Untitled'; saveState(); } });
 
     const actions = el('div', 'actions');
-    const importA = el('a'); importA.textContent = 'import'; importA.addEventListener('click', importData);
-    const exportA = el('a'); exportA.textContent = 'export'; exportA.addEventListener('click', exportData);
-    const addA = el('a'); addA.textContent = '+ month'; addA.addEventListener('click', addPeriod);
+    const importA = el('a'); importA.textContent = 'import'; importA.setAttribute('role', 'button'); importA.setAttribute('tabindex', '0'); importA.addEventListener('click', importData); importA.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); importData(); } });
+    const exportA = el('a'); exportA.textContent = 'export'; exportA.setAttribute('role', 'button'); exportA.setAttribute('tabindex', '0'); exportA.addEventListener('click', exportData); exportA.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); exportData(); } });
+    const addA = el('a'); addA.textContent = '+ month'; addA.setAttribute('role', 'button'); addA.setAttribute('tabindex', '0'); addA.addEventListener('click', addPeriod); addA.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); addPeriod(); } });
     actions.append(importA, exportA, addA);
     header.append(h1, actions);
     app.appendChild(header);
@@ -873,20 +888,26 @@
 
     const name = el('span', 'period-name');
     name.textContent = period.name;
+    name.setAttribute('aria-label', 'Period name');
     makeEditable(name, { onBlur: (t) => { period.name = t || 'Month'; saveState(); } });
 
     const date = el('span', 'period-date');
     date.textContent = period.date || '';
+    date.setAttribute('aria-label', 'Period date');
     makeEditable(date, { onBlur: (t) => { period.date = t; saveState(); } });
 
     const del = el('span', 'period-del');
     del.textContent = '×';
     del.title = 'Delete month';
+    del.setAttribute('role', 'button');
+    del.setAttribute('aria-label', `Delete ${period.name}`);
+    del.setAttribute('tabindex', '0');
     del.addEventListener('click', () => {
       if (state.periods.length <= 1) return;
       state.periods.splice(si, 1);
       saveState(); render();
     });
+    del.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); del.click(); } });
 
     head.append(name, date, del);
     sec.appendChild(head);
@@ -908,9 +929,13 @@
       ghostEl.dataset.si = si;
       ghostEl.dataset.ghost = '1';
 
-      const plus = el('span'); plus.textContent = '+';
+      const plus = el('span'); plus.textContent = '+'; plus.setAttribute('aria-hidden', 'true');
+      ghostEl.setAttribute('role', 'button');
+      ghostEl.setAttribute('aria-label', 'Add tile');
+      ghostEl.setAttribute('tabindex', '0');
       ghostEl.appendChild(plus);
 
+      ghostEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ghostEl.click(); } });
       ghostEl.addEventListener('click', () => {
         const t = { id: uid(), colSpan: 1, rowSpan: 1, title: 'New task', description: '', status: 'Backlog', tag: '' };
         period.tiles.push(t);
@@ -957,6 +982,7 @@
     card.style.gridColumn = `${p.col} / span ${p.w}`;
     card.style.gridRow = `${p.row} / span ${p.h}`;
     card.draggable = true;
+    card.setAttribute('aria-label', tile.title);
 
     // Drag events
     card.addEventListener('dragstart', (e) => {
@@ -1007,14 +1033,19 @@
 
     // Delete
     const delB = el('span', 'del-btn'); delB.textContent = '×';
+    delB.setAttribute('role', 'button');
+    delB.setAttribute('aria-label', 'Delete tile');
+    delB.setAttribute('tabindex', '0');
     delB.addEventListener('click', (e) => {
       e.stopPropagation();
       const i = period.tiles.indexOf(tile);
       if (i !== -1) { period.tiles.splice(i, 1); saveState(); render(); }
     });
+    delB.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); delB.click(); } });
 
     // Title
     const t = el('span', 't'); t.textContent = tile.title;
+    t.setAttribute('aria-label', 'Tile title');
     makeEditable(t, {
       onFocus: () => card.classList.add('editing'),
       onBlur: (text) => { card.classList.remove('editing'); tile.title = text || 'Untitled'; saveState(); }
@@ -1023,6 +1054,7 @@
     // Description (3-line clamped; clamp is lifted while editing via CSS .editing .de)
     const de = el('span', 'de'); de.textContent = tile.description || '';
     de.dataset.placeholder = 'Add description…';
+    de.setAttribute('aria-label', 'Tile description');
     makeEditable(de, {
       multiline: true,
       onFocus: () => card.classList.add('editing'),
@@ -1042,12 +1074,17 @@
     // Footer
     const f = el('div', 'f');
 
-    const st = el('span', 'st'); st.textContent = tile.status; st.title = 'Click to change status';
+    const st = el('span', 'st'); st.textContent = tile.status;
+    st.setAttribute('role', 'button');
+    st.setAttribute('tabindex', '0');
+    st.setAttribute('aria-label', `Status: ${tile.status}. Click to change`);
     st.addEventListener('click', (e) => {
       e.stopPropagation();
       cycleStatus(tile);
+      st.setAttribute('aria-label', `Status: ${tile.status}. Click to change`);
       saveState(); animatedRender(100);
     });
+    st.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); st.click(); } });
     f.appendChild(st);
 
     const tg = el('span', 'tg'); tg.textContent = tile.tag || ''; tg.dataset.placeholder = 'tag';
@@ -1056,6 +1093,9 @@
 
     // Resize handle
     const rh = el('span', 'rh'); rh.textContent = '⤡';
+    rh.setAttribute('role', 'button');
+    rh.setAttribute('aria-label', 'Resize tile');
+    rh.setAttribute('tabindex', '0');
     rh.addEventListener('mousedown', (e) => startResize(e, tile, card));
 
     card.append(delB, t, de, moreBtn, f, rh);
