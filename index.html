@@ -76,10 +76,10 @@
 
     .actions a:hover { color: var(--text); }
 
-    /* ─── Sprint ─── */
-    .sprint { margin-bottom: 4px; }
+    /* ─── Period ─── */
+    .period { margin-bottom: 4px; }
 
-    .sprint-head {
+    .period-head {
       display: flex;
       align-items: baseline;
       gap: 10px;
@@ -87,7 +87,7 @@
       padding-left: 2px;
     }
 
-    .sprint-name {
+    .period-name {
       font-size: 14px;
       font-weight: 600;
       outline: none;
@@ -95,13 +95,13 @@
       transition: background 0.15s;
     }
 
-    .sprint-name:focus {
+    .period-name:focus {
       padding: 1px 4px;
       margin: -1px -4px;
       outline: 1.5px solid var(--subtle);
     }
 
-    .sprint-date {
+    .period-date {
       font-size: 11px;
       font-family: 'JetBrains Mono', monospace;
       color: var(--muted);
@@ -110,13 +110,13 @@
       transition: background 0.15s;
     }
 
-    .sprint-date:focus {
+    .period-date:focus {
       padding: 1px 4px;
       margin: -1px -4px;
       outline: 1.5px solid var(--subtle);
     }
 
-    .sprint-del {
+    .period-del {
       font-size: 14px;
       color: var(--faint);
       cursor: pointer;
@@ -126,8 +126,8 @@
       user-select: none;
     }
 
-    .sprint-head:hover .sprint-del { opacity: 1; }
-    .sprint-del:hover { color: #d55; }
+    .period-head:hover .period-del { opacity: 1; }
+    .period-del:hover { color: #d55; }
 
     /* ─── Grid ─── */
     .g {
@@ -497,7 +497,7 @@
       .c { padding: 12px 14px 10px; }
       .t { font-size: 12px; }
       .de { font-size: 11px; }
-      .sprint { margin-bottom: 4px; }
+      .period { margin-bottom: 4px; }
     }
   </style>
 </head>
@@ -550,8 +550,8 @@
   }
 
   function valid(d) {
-    if (!d || typeof d.title !== 'string' || !Array.isArray(d.sprints)) return false;
-    return d.sprints.every(s =>
+    if (!d || typeof d.title !== 'string' || !Array.isArray(d.periods)) return false;
+    return d.periods.every(s =>
       s.id && typeof s.name === 'string' && Array.isArray(s.tiles) &&
       s.tiles.every(t => t.id && typeof t.title === 'string')
     );
@@ -560,7 +560,7 @@
   function seed() {
     return {
       title: 'My Roadmap',
-      sprints: [
+      periods: [
         {
           id: uid(), name: 'April', date: '2025',
           tiles: [
@@ -740,7 +740,7 @@
   let cols = getCols();
 
   // ─── Drag & drop state ─────────────────────────────────────────────────────
-  let dragSrc = null; // { sprintIdx, tileIdx }
+  let dragSrc = null; // { periodIdx, tileIdx }
 
   function clearDropStyles() {
     document.querySelectorAll('.drop-before, .drop-after, .dragging').forEach(e => {
@@ -854,37 +854,37 @@
     const actions = el('div', 'actions');
     const importA = el('a'); importA.textContent = 'import'; importA.addEventListener('click', importData);
     const exportA = el('a'); exportA.textContent = 'export'; exportA.addEventListener('click', exportData);
-    const addA = el('a'); addA.textContent = '+ month'; addA.addEventListener('click', addSprint);
+    const addA = el('a'); addA.textContent = '+ month'; addA.addEventListener('click', addPeriod);
     actions.append(importA, exportA, addA);
     header.append(h1, actions);
     app.appendChild(header);
 
-    // Sprints
-    state.sprints.forEach((sprint, si) => app.appendChild(renderSprint(sprint, si)));
+    // Periods
+    state.periods.forEach((period, si) => app.appendChild(renderPeriod(period, si)));
 
     // Check description overflow after paint (double rAF = after browser has painted)
     requestAnimationFrame(checkDescriptionOverflow);
   }
 
-  function renderSprint(sprint, si) {
-    const sec = el('section', 'sprint');
+  function renderPeriod(period, si) {
+    const sec = el('section', 'period');
 
-    const head = el('div', 'sprint-head');
+    const head = el('div', 'period-head');
 
-    const name = el('span', 'sprint-name');
-    name.textContent = sprint.name;
-    makeEditable(name, { onBlur: (t) => { sprint.name = t || 'Month'; saveState(); } });
+    const name = el('span', 'period-name');
+    name.textContent = period.name;
+    makeEditable(name, { onBlur: (t) => { period.name = t || 'Month'; saveState(); } });
 
-    const date = el('span', 'sprint-date');
-    date.textContent = sprint.date || '';
-    makeEditable(date, { onBlur: (t) => { sprint.date = t; saveState(); } });
+    const date = el('span', 'period-date');
+    date.textContent = period.date || '';
+    makeEditable(date, { onBlur: (t) => { period.date = t; saveState(); } });
 
-    const del = el('span', 'sprint-del');
+    const del = el('span', 'period-del');
     del.textContent = '×';
     del.title = 'Delete month';
     del.addEventListener('click', () => {
-      if (state.sprints.length <= 1) return;
-      state.sprints.splice(si, 1);
+      if (state.periods.length <= 1) return;
+      state.periods.splice(si, 1);
       saveState(); render();
     });
 
@@ -895,10 +895,10 @@
     const g = el('div', 'g');
     g.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
-    const { placements, ghosts } = layoutGrid(sprint.tiles, cols);
+    const { placements, ghosts } = layoutGrid(period.tiles, cols);
 
     for (const p of placements) {
-      g.appendChild(renderCard(p.tile, sprint, si, p));
+      g.appendChild(renderCard(p.tile, period, si, p));
     }
 
     for (const gh of ghosts) {
@@ -913,7 +913,7 @@
 
       ghostEl.addEventListener('click', () => {
         const t = { id: uid(), colSpan: 1, rowSpan: 1, title: 'New task', description: '', status: 'Backlog', tag: '' };
-        sprint.tiles.push(t);
+        period.tiles.push(t);
         saveState(); animatedRender(200);
         setTimeout(() => {
           const titleEl = document.querySelector(`[data-tile="${t.id}"] .t`);
@@ -936,9 +936,9 @@
         e.preventDefault();
         if (!dragSrc) return;
         const { si: srcSi, ti: srcTi } = dragSrc;
-        const [tile] = state.sprints[srcSi].tiles.splice(srcTi, 1);
-        // append to target sprint
-        state.sprints[si].tiles.push(tile);
+        const [tile] = state.periods[srcSi].tiles.splice(srcTi, 1);
+        // append to target period
+        state.periods[si].tiles.push(tile);
         dragSrc = null; clearDropStyles();
         saveState(); animatedRender(220);
       });
@@ -950,7 +950,7 @@
     return sec;
   }
 
-  function renderCard(tile, sprint, si, p) {
+  function renderCard(tile, period, si, p) {
     const card = el('div', 'c' + (STATUS_CLS[tile.status] || ''));
     card.dataset.tile = tile.id;
     card.dataset.si = si;
@@ -960,7 +960,7 @@
 
     // Drag events
     card.addEventListener('dragstart', (e) => {
-      dragSrc = { si, ti: sprint.tiles.indexOf(tile) };
+      dragSrc = { si, ti: period.tiles.indexOf(tile) };
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('text/plain', tile.id);
       // slight delay so the ghost renders before opacity drops
@@ -973,7 +973,7 @@
 
     card.addEventListener('dragover', (e) => {
       if (!dragSrc) return;
-      if (dragSrc.si === si && dragSrc.ti === sprint.tiles.indexOf(tile)) return;
+      if (dragSrc.si === si && dragSrc.ti === period.tiles.indexOf(tile)) return;
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
       clearDropStyles();
@@ -993,14 +993,14 @@
       const isBefore = card.classList.contains('drop-before');
 
       // Remove from source
-      const [movedTile] = state.sprints[srcSi].tiles.splice(srcTi, 1);
+      const [movedTile] = state.periods[srcSi].tiles.splice(srcTi, 1);
 
-      // Find current index of drop target (after splice, same sprint)
-      const targetTi = sprint.tiles.indexOf(tile);
+      // Find current index of drop target (after splice, same period)
+      const targetTi = period.tiles.indexOf(tile);
       let insertAt = isBefore ? targetTi : targetTi + 1;
-      insertAt = clamp(insertAt, 0, sprint.tiles.length);
+      insertAt = clamp(insertAt, 0, period.tiles.length);
 
-      state.sprints[si].tiles.splice(insertAt, 0, movedTile);
+      state.periods[si].tiles.splice(insertAt, 0, movedTile);
       dragSrc = null; clearDropStyles();
       saveState(); animatedRender(220);
     });
@@ -1009,8 +1009,8 @@
     const delB = el('span', 'del-btn'); delB.textContent = '×';
     delB.addEventListener('click', (e) => {
       e.stopPropagation();
-      const i = sprint.tiles.indexOf(tile);
-      if (i !== -1) { sprint.tiles.splice(i, 1); saveState(); render(); }
+      const i = period.tiles.indexOf(tile);
+      if (i !== -1) { period.tiles.splice(i, 1); saveState(); render(); }
     });
 
     // Title
@@ -1090,16 +1090,16 @@
     input.click();
   }
 
-  // ─── Add Sprint ────────────────────────────────────────────────────────────
-  function addSprint() {
-    const n = state.sprints.length + 1;
+  // ─── Add Period ────────────────────────────────────────────────────────────
+  function addPeriod() {
+    const n = state.periods.length + 1;
     const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     const now = new Date();
     const monthName = months[(now.getMonth() + n - 1) % 12];
-    state.sprints.push({ id: uid(), name: monthName, date: String(now.getFullYear()), tiles: [] });
+    state.periods.push({ id: uid(), name: monthName, date: String(now.getFullYear()), tiles: [] });
     saveState(); render();
     setTimeout(() => {
-      const names = document.querySelectorAll('.sprint-name');
+      const names = document.querySelectorAll('.period-name');
       const last = names[names.length - 1];
       if (last) { last.focus(); selectAll(last); }
     }, 30);

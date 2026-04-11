@@ -7,11 +7,11 @@ A local-first, single-file product roadmap tool. No backend, no build step, no n
 ## Features
 
 - **Bento grid layout** — tiles snap to a 6-column grid with 7 size presets (1×1, 2×1, 3×1, 4×1, 6×1, 2×2, 3×2)
-- **Drag & drop** — reorder tiles within and across sprints with animated FLIP transitions
-- **Inline editing** — click any title, description, tag, or sprint name to edit in place
+- **Drag & drop** — reorder tiles within and across periods with animated FLIP transitions
+- **Inline editing** — click any title, description, tag, or period name to edit in place
 - **Status cycling** — click the status badge to cycle through Backlog → In progress → Done → Blocked
 - **Tile modal** — click a card to open a full detail view with notes field
-- **Sprint management** — add, rename, reorder, and delete sprints
+- **Period management** — add, rename, reorder, and delete periods
 - **Persistent** — data lives in `localStorage`; nothing leaves your browser
 - **Import / Export** — save and load your roadmap as a plain JSON file
 - **Responsive** — adapts from desktop down to mobile
@@ -36,8 +36,8 @@ No server, no installation, no account required.
 | Delete tile | Hover card → click × (top-right) |
 | Add tile | Click any ghost `+` cell |
 | Move tile | Drag and drop |
-| Add sprint | Click `+ sprint` in the header |
-| Delete sprint | Hover sprint name → click × |
+| Add period | Click `+ period` in the header |
+| Delete period | Hover period name → click × |
 | Open detail | Click anywhere on a card (not a control) |
 | Export | Click `export` in the header → downloads `roadmap.json` |
 | Import | Click `import` in the header → pick a `.json` file |
@@ -49,10 +49,10 @@ Roadmaps are stored as JSON (in `localStorage` and exported files):
 ```json
 {
   "title": "My Roadmap",
-  "sprints": [
+  "periods": [
     {
       "id": "s1",
-      "name": "Sprint 1",
+      "name": "Period 1",
       "date": "Apr 6 – Apr 19",
       "tiles": [
         {
