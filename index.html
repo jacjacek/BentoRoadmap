@@ -534,7 +534,7 @@
   const STORAGE_KEY = 'bento-roadmap-v2';
   const STATUSES = ['Backlog', 'In progress', 'Blocked', 'Done'];
   const STATUS_CLS = { 'Done': ' done', 'Blocked': ' blocked', 'In progress': ' in-progress' };
-  const GAP = 10;
+  const GAP = 12;
 
   // ─── Utility ───────────────────────────────────────────────────────────────
   function cycleStatus(tile) {
@@ -672,8 +672,7 @@
       if (opts.onBlur) opts.onBlur(element.textContent.trim());
     });
     element.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !opts.multiline) { e.preventDefault(); element.blur(); }
-      if (e.key === 'Enter' && opts.multiline && !e.shiftKey) { e.preventDefault(); element.blur(); }
+      if (e.key === 'Enter' && (!opts.multiline || !e.shiftKey)) { e.preventDefault(); element.blur(); }
       if (e.key === 'Escape') element.blur();
     });
     element.addEventListener('paste', (e) => {
@@ -738,6 +737,7 @@
       cycleStatus(tile);
       st.textContent = tile.status;
       st.setAttribute('aria-label', `Status: ${tile.status}. Click to change`);
+      modal.className = 'modal' + (STATUS_CLS[tile.status] || '');
       saveState(); animatedRender(100);
     });
     st.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); st.click(); } });

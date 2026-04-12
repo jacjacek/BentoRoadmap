@@ -62,11 +62,10 @@ Roadmaps are stored as JSON (in `localStorage` and exported files):
           "id": "t1",
           "title": "Feature name",
           "description": "Short description",
-          "notes": "",
           "status": "backlog",
           "tag": "frontend",
-          "cols": 2,
-          "rows": 1
+          "colSpan": 2,
+          "rowSpan": 1
         }
       ]
     }
