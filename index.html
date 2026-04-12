@@ -148,6 +148,10 @@
       transition: opacity 0.15s, color 0.15s;
       margin-left: auto;
       user-select: none;
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: inherit;
     }
 
     .period-head:hover .period-archive { opacity: 1; }
@@ -904,7 +908,7 @@
       modal.className = 'modal' + (STATUS_CLS[tile.status] || '');
       saveState(); animatedRender(100);
     });
-    st.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); st.click(); } });
+    addKeyClick(st);
 
     const tg = el('span', 'tg');
     tg.textContent = tile.tag || '';
@@ -1038,7 +1042,6 @@
     const vals = collectFilterValues();
     const dropdown = el('div', 'filter-dropdown');
 
-    // Archive toggle — first, no label
     const archChip = el('button', 'filter-chip' + (showArchived ? ' on' : ''));
     archChip.textContent = 'show archived periods';
     archChip.addEventListener('click', (e) => {
@@ -1172,11 +1175,11 @@
     filterA.textContent = total > 0 ? `filter (${total})` : 'filter';
     filterA.setAttribute('role', 'button'); filterA.setAttribute('tabindex', '0');
     filterA.addEventListener('click', (e) => { e.stopPropagation(); openFilterDropdown(filterA); });
-    filterA.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); filterA.click(); } });
+    addKeyClick(filterA);
     filterWrap.appendChild(filterA);
 
-    const importA = el('a'); importA.textContent = 'import'; importA.setAttribute('role', 'button'); importA.setAttribute('tabindex', '0'); importA.addEventListener('click', importData); importA.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); importData(); } });
-    const exportA = el('a'); exportA.textContent = 'export'; exportA.setAttribute('role', 'button'); exportA.setAttribute('tabindex', '0'); exportA.addEventListener('click', exportData); exportA.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); exportData(); } });
+    const importA = el('a'); importA.textContent = 'import'; importA.setAttribute('role', 'button'); importA.setAttribute('tabindex', '0'); importA.addEventListener('click', importData); addKeyClick(importA);
+    const exportA = el('a'); exportA.textContent = 'export'; exportA.setAttribute('role', 'button'); exportA.setAttribute('tabindex', '0'); exportA.addEventListener('click', exportData); addKeyClick(exportA);
     const themeBtn = el('button', 'theme-toggle');
     themeBtn.textContent = effectiveTheme() === 'dark' ? '☀' : '☾';
     themeBtn.setAttribute('aria-label', 'Toggle theme');
@@ -1191,13 +1194,12 @@
       if (sec) app.appendChild(sec);
     });
 
-    // Add period button at the bottom
     const addPeriodBtn = el('a', 'add-period-btn');
     addPeriodBtn.textContent = '+ period';
     addPeriodBtn.setAttribute('role', 'button');
     addPeriodBtn.setAttribute('tabindex', '0');
     addPeriodBtn.addEventListener('click', addPeriod);
-    addPeriodBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); addPeriod(); } });
+    addKeyClick(addPeriodBtn);
     app.appendChild(addPeriodBtn);
 
     // Check description overflow after paint (double rAF = after browser has painted)
@@ -1226,17 +1228,14 @@
     date.setAttribute('aria-label', 'Period date');
     makeEditable(date, { onBlur: (t) => { period.date = t; saveState(); } });
 
-    const arch = el('span', 'period-archive');
+    const arch = el('button', 'period-archive');
     arch.textContent = period.archived ? 'unarchive' : 'archive';
-    arch.title = period.archived ? 'Unarchive period' : 'Archive period';
-    arch.setAttribute('role', 'button');
     arch.setAttribute('aria-label', period.archived ? `Unarchive ${period.name}` : `Archive ${period.name}`);
-    arch.setAttribute('tabindex', '0');
     arch.addEventListener('click', () => {
       period.archived = !period.archived;
+      pruneActiveFilters();
       saveState(); render();
     });
-    arch.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); arch.click(); } });
 
     const del = el('span', 'period-del');
     del.textContent = '×';
@@ -1249,15 +1248,11 @@
       state.periods.splice(si, 1);
       saveState(); render();
     });
-    del.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); del.click(); } });
+    addKeyClick(del);
 
-    if (period.archived) {
-      const badge = el('span', 'period-archived-badge');
-      badge.textContent = 'archived';
-      head.append(name, date, badge, arch, del);
-    } else {
-      head.append(name, date, arch, del);
-    }
+    const badge = period.archived ? el('span', 'period-archived-badge') : null;
+    if (badge) badge.textContent = 'archived';
+    head.append(name, date, ...(badge ? [badge] : []), arch, del);
     sec.appendChild(head);
 
     // Grid
@@ -1283,7 +1278,7 @@
       ghostEl.setAttribute('tabindex', '0');
       ghostEl.appendChild(plus);
 
-      ghostEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ghostEl.click(); } });
+      addKeyClick(ghostEl);
       ghostEl.addEventListener('click', () => {
         const t = { id: uid(), colSpan: 1, rowSpan: 1, title: 'New task', description: '', status: 'Backlog', tag: '' };
         period.tiles.push(t);
@@ -1389,7 +1384,7 @@
       const i = period.tiles.indexOf(tile);
       if (i !== -1) { period.tiles.splice(i, 1); saveState(); render(); }
     });
-    delB.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); delB.click(); } });
+    addKeyClick(delB);
 
     // Title
     const t = el('span', 't'); t.textContent = tile.title;
@@ -1434,7 +1429,7 @@
       st.setAttribute('aria-label', `Status: ${tile.status}. Click to change`);
       saveState(); animatedRender(100);
     });
-    st.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); st.click(); } });
+    addKeyClick(st);
     f.appendChild(st);
 
     const tg = el('span', 'tg'); tg.textContent = tile.tag || ''; tg.dataset.placeholder = 'tag';
@@ -1496,6 +1491,12 @@
   }
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
+  function addKeyClick(element) {
+    element.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); element.click(); }
+    });
+  }
+
   function selectAll(el) {
     const r = document.createRange();
     r.selectNodeContents(el);
