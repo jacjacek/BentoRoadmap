@@ -555,6 +555,66 @@
 
     .filter-chip.on { background: var(--text); color: var(--card); border-color: var(--text); }
 
+    /* ─── Dark mode ─── */
+    @media (prefers-color-scheme: dark) {
+      html:not([data-theme="light"]) {
+        --bg: #141413;
+        --card: #1e1e1c;
+        --border: #2e2e2c;
+        --border-faint: #252523;
+        --focus-bg: #262624;
+        --text: #e8e8e4;
+        --muted: #8a8a84;
+        --faint: #5a5a56;
+        --subtle: #3a3a38;
+        --accent: #5b9cf6;
+      }
+
+      html:not([data-theme="light"]) .c:hover { box-shadow: 0 3px 12px rgba(0,0,0,.25); }
+      html:not([data-theme="light"]) .c.in-progress:hover { box-shadow: 0 3px 12px rgba(0,0,0,.3); }
+      html:not([data-theme="light"]) .modal-overlay { background: rgba(0,0,0,.55); }
+      html:not([data-theme="light"]) .filter-dropdown { box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+      html:not([data-theme="light"]) .gh:hover { background: rgba(255,255,255,.03); }
+      html:not([data-theme="light"]) .modal-close:hover { background: var(--bg); }
+      html:not([data-theme="light"]) .del-btn:hover { background: rgba(213,85,85,.12); }
+    }
+
+    html[data-theme="dark"] {
+      --bg: #141413;
+      --card: #1e1e1c;
+      --border: #2e2e2c;
+      --border-faint: #252523;
+      --focus-bg: #262624;
+      --text: #e8e8e4;
+      --muted: #8a8a84;
+      --faint: #5a5a56;
+      --subtle: #3a3a38;
+      --accent: #5b9cf6;
+    }
+
+    html[data-theme="dark"] .c:hover { box-shadow: 0 3px 12px rgba(0,0,0,.25); }
+    html[data-theme="dark"] .c.in-progress:hover { box-shadow: 0 3px 12px rgba(0,0,0,.3); }
+    html[data-theme="dark"] .modal-overlay { background: rgba(0,0,0,.55); }
+    html[data-theme="dark"] .filter-dropdown { box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+    html[data-theme="dark"] .gh:hover { background: rgba(255,255,255,.03); }
+    html[data-theme="dark"] .modal-close:hover { background: var(--bg); }
+    html[data-theme="dark"] .del-btn:hover { background: rgba(213,85,85,.12); }
+
+    /* ─── Theme toggle ─── */
+    .theme-toggle {
+      font-size: 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text);
+      padding: 0;
+      line-height: 1;
+      transition: transform 0.2s;
+      user-select: none;
+    }
+
+    .theme-toggle:hover { transform: rotate(15deg); }
+
     /* ─── Responsive ─── */
     @media (max-width: 640px) {
       :root { --row-h: 100px; --gap: 8px; }
@@ -577,9 +637,33 @@
   'use strict';
 
   const STORAGE_KEY = 'bento-roadmap-v2';
+  const THEME_KEY   = 'bento-theme';
   const STATUSES = ['Backlog', 'In progress', 'Blocked', 'Done'];
   const STATUS_CLS = { 'Done': ' done', 'Blocked': ' blocked', 'In progress': ' in-progress' };
   const GAP = 12;
+
+  // ─── Theme ─────────────────────────────────────────────────────────────────
+  function applyTheme(theme) {
+    if (theme) document.documentElement.setAttribute('data-theme', theme);
+    else document.documentElement.removeAttribute('data-theme');
+  }
+
+  function effectiveTheme() {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored) return stored;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  function toggleTheme() {
+    const next = effectiveTheme() === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, next);
+    applyTheme(next);
+    // update icon without full re-render
+    const btn = document.querySelector('.theme-toggle');
+    if (btn) btn.textContent = next === 'dark' ? '☀' : '☾';
+  }
+
+  applyTheme(localStorage.getItem(THEME_KEY));
 
   // ─── Utility ───────────────────────────────────────────────────────────────
   function cycleStatus(tile) {
@@ -1034,7 +1118,11 @@
     const importA = el('a'); importA.textContent = 'import'; importA.setAttribute('role', 'button'); importA.setAttribute('tabindex', '0'); importA.addEventListener('click', importData); importA.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); importData(); } });
     const exportA = el('a'); exportA.textContent = 'export'; exportA.setAttribute('role', 'button'); exportA.setAttribute('tabindex', '0'); exportA.addEventListener('click', exportData); exportA.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); exportData(); } });
     const addA = el('a'); addA.textContent = '+ month'; addA.setAttribute('role', 'button'); addA.setAttribute('tabindex', '0'); addA.addEventListener('click', addPeriod); addA.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); addPeriod(); } });
-    actions.append(filterWrap, importA, exportA, addA);
+    const themeBtn = el('button', 'theme-toggle');
+    themeBtn.textContent = effectiveTheme() === 'dark' ? '☀' : '☾';
+    themeBtn.setAttribute('aria-label', 'Toggle theme');
+    themeBtn.addEventListener('click', toggleTheme);
+    actions.append(filterWrap, importA, exportA, addA, themeBtn);
     header.append(h1, actions);
     app.appendChild(header);
 
