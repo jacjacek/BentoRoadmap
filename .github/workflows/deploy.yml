@@ -1,0 +1,28 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-landing:
+    name: Deploy landing (bentoroadmap.com)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 455c44c6f65be4a7a1ae05dc486923ef
+          command: pages deploy . --project-name bentoroadmap --branch main
+
+  deploy-app:
+    name: Deploy app (app.bentoroadmap.com)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 455c44c6f65be4a7a1ae05dc486923ef
+          command: pages deploy app --project-name bento-app --branch main
