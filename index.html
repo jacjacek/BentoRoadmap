@@ -4,8 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bento Roadmap — Plan visually. Ship faster.</title>
+<meta name="description" content="A minimal, local-first roadmap tool that runs entirely in your browser. Drag features, resize cards, export JSON. No signup, no backend, no noise.">
 <link rel="canonical" href="https://bentoroadmap.com">
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"></noscript>
 <style>
   [data-theme="dark"] {
     --bg: #0e0e0d;
@@ -14,7 +18,7 @@
     --border-faint: #222220;
     --text: #e8e7e4;
     --text-dim: #8a8984;
-    --text-faint: #5a5955;
+    --text-faint: #7e7c78;
     --preview-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 24px 80px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.3);
     --preview-border: #2a2a28;
     --preview-bg: #141413;
@@ -271,6 +275,7 @@
   </div>
 </nav>
 
+<main>
 <section class="hero">
   <div class="hero-tag">Local-first · Zero dependencies · Free forever</div>
   <h1><span class="rotate-wrap"><span class="rotate-words" id="rotator"><span class="rotate-word active">Plan your product</span><span class="rotate-word">Show your progress</span><span class="rotate-word">List your tasks</span><span class="rotate-word">Map your vision</span><span class="rotate-word">Ship with clarity</span></span></span><br>in a <em>bento grid</em></h1>
@@ -283,7 +288,7 @@
 
 <div class="preview">
   <div class="preview-frame">
-    <iframe id="appFrame" class="app-iframe" sandbox="allow-scripts allow-same-origin allow-downloads"></iframe>
+    <iframe id="appFrame" class="app-iframe" sandbox="allow-scripts allow-same-origin allow-downloads" title="Bento Roadmap app preview"></iframe>
   </div>
 </div>
 
@@ -343,6 +348,7 @@
   <p>Free, open source, and yours to keep.</p>
   <button class="btn-primary" onclick="window.open('https://app.bentoroadmap.com','_blank')">Open Bento Roadmap</button>
 </section>
+</main>
 
 <footer>
   <div class="footer-left">bentoroadmap.com · 2026</div>
