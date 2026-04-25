@@ -91,6 +91,9 @@ Ideas for contributions:
 - Keyboard shortcuts
 - Multiple roadmap tabs
 - Offline-first via Service Worker
+- **Bento Metrics** — a dedicated metrics view (toggled from the header) that surfaces stats at two levels:
+  - *Feature-level*: status breakdown per period (done / in progress / backlog / blocked counts and percentages), average tile size, most-used tags, velocity trend across periods
+  - *Roadmap-level*: total features, overall completion rate, number of periods, blocked rate, streaks (e.g. periods with zero blocked items)
 
 ## License
 
