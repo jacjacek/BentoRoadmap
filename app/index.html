@@ -87,6 +87,15 @@
 
     .actions a:hover { color: var(--text); }
 
+    .info-link {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 15px; height: 15px;
+      border: 1.5px solid currentColor;
+      border-radius: 50%;
+      font-size: 9px; font-weight: 700; font-style: italic;
+      line-height: 1; flex-shrink: 0;
+    }
+
     /* ─── Period ─── */
     .period { margin-bottom: 4px; }
 
@@ -1184,7 +1193,8 @@
     themeBtn.textContent = effectiveTheme() === 'dark' ? '☀' : '☾';
     themeBtn.setAttribute('aria-label', 'Toggle theme');
     themeBtn.addEventListener('click', toggleTheme);
-    actions.append(filterWrap, importA, exportA, themeBtn);
+    const infoA = el('a', 'info-link'); infoA.textContent = 'i'; infoA.href = 'https://bentoroadmap.com'; infoA.target = '_blank'; infoA.setAttribute('aria-label', 'About Bento Roadmap');
+    actions.append(infoA, filterWrap, importA, exportA, themeBtn);
     header.append(h1, actions);
     app.appendChild(header);
 
