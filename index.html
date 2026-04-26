@@ -6,6 +6,17 @@
 <title>Bento Roadmap — Plan visually. Ship faster.</title>
 <meta name="description" content="A minimal, local-first roadmap tool that runs entirely in your browser. Drag features, resize cards, export JSON. No signup, no backend, no noise.">
 <link rel="canonical" href="https://bentoroadmap.com">
+<link rel="icon" type="image/svg+xml" href="bentoroadmap-dark.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="bentoroadmap-light.svg" media="(prefers-color-scheme: dark)">
+<meta property="og:title" content="Bento Roadmap — Plan visually. Ship faster.">
+<meta property="og:description" content="A minimal, local-first roadmap tool that runs entirely in your browser. Drag features, resize cards, export JSON. No signup, no backend, no noise.">
+<meta property="og:image" content="https://bentoroadmap.com/og-image.svg">
+<meta property="og:url" content="https://bentoroadmap.com">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Bento Roadmap — Plan visually. Ship faster.">
+<meta name="twitter:description" content="A minimal, local-first roadmap tool that runs entirely in your browser. No signup, no backend, no noise.">
+<meta name="twitter:image" content="https://bentoroadmap.com/og-image.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -19,9 +30,9 @@
     --text: #e8e7e4;
     --text-dim: #8a8984;
     --text-faint: #7e7c78;
-    --preview-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 24px 80px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.3);
-    --preview-border: #2a2a28;
-    --preview-bg: #141413;
+    --preview-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 4px 20px rgba(0,0,0,0.3);
+    --preview-border: #3a3a38;
+    --preview-bg: #1c1c1a;
   }
 
   [data-theme="light"] {
@@ -32,9 +43,9 @@
     --text: #1a1a19;
     --text-dim: #78756f;
     --text-faint: #b0ada8;
-    --preview-shadow: 0 0 0 1px rgba(0,0,0,0.04), 0 24px 80px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.05);
-    --preview-border: #e0dfdd;
-    --preview-bg: #f8f8f7;
+    --preview-shadow: 0 0 0 1px rgba(0,0,0,0.06), 0 12px 48px rgba(0,0,0,0.13), 0 4px 12px rgba(0,0,0,0.07);
+    --preview-border: #d0cfcd;
+    --preview-bg: #efefed;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1939,6 +1950,7 @@ __CLOSE_SCRIPT__
   // ─── Load app into iframe ───
   var appHTML = document.getElementById('appSource').textContent;
   appHTML = appHTML.replace(/__CLOSE_SCRIPT__/g, '<\/script>');
+  appHTML = appHTML.replace('<html lang="en">', '<html lang="en" data-theme="' + effectiveTheme() + '">');
   var blob = new Blob([appHTML], { type: 'text/html' });
   iframe.src = URL.createObjectURL(blob);
 
