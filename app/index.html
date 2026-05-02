@@ -191,7 +191,6 @@
       display: grid;
       gap: var(--gap);
       margin-bottom: 14px;
-      min-width: 100%;
     }
 
     .gantt-lane-head { min-width: 0; }
@@ -203,7 +202,6 @@
       grid-auto-rows: var(--row-h);
       gap: var(--gap);
       position: relative;
-      min-width: 100%;
     }
 
     .gantt-lane-sep {
@@ -1044,7 +1042,7 @@
       const last = members[members.length - 1];
       const w1 = clamp(first.tile.colSpan || 1, 1, cols);
       const wN = clamp(last.tile.colSpan || 1, 1, cols);
-      const h = members.reduce((m, p) => Math.max(m, clamp(p.tile.rowSpan || 1, 1, 6)), 1);
+      const h = members.reduce((m, p) => Math.max(m, Math.max(1, p.tile.rowSpan || 1)), 1);
       const startCol = first.lane * cols + (cols - w1); // right-aligned in first lane
       const endCol   = last.lane  * cols + wN;          // extends to left side of last lane + wN
       const w = endCol - startCol;
@@ -1082,7 +1080,7 @@
       for (const tile of lane.tiles) {
         if (placedTiles.has(tile.id)) continue;
         const w = clamp(tile.colSpan || 1, 1, cols);
-        const h = clamp(tile.rowSpan || 1, 1, 6);
+        const h = Math.max(1, tile.rowSpan || 1);
         outer: for (let r = 0; ; r++) {
           ensure(r + 1);
           for (let c = 0; c <= cols - w; c++) {
@@ -1239,12 +1237,14 @@
 
   // ─── Size picker ───────────────────────────────────────────────────────────
   // ─── Drag resize ───────────────────────────────────────────────────────────
-  function startResize(e, tile, cardEl, gridCols) {
+  function startResize(e, tile, cardEl, gridCols, laneCols, maxRows) {
     e.preventDefault();
     e.stopPropagation();
 
     const gridEl = cardEl.parentElement;
     const totalCols = gridCols || cols; // grid track count (Gantt uses numLanes*cols)
+    const capCols = laneCols || cols;
+    const capRows = maxRows !== undefined ? maxRows : 6;
     const startX = e.clientX;
     const startY = e.clientY;
     const startCols = tile.colSpan || 1;
@@ -1260,9 +1260,11 @@
     function onMove(ev) {
       const dx = ev.clientX - startX;
       const dy = ev.clientY - startY;
-      // colSpan still capped at per-lane cols so a single tile never escapes its lane
-      const newCols = clamp(startCols + Math.round(dx / (cellW + GAP)), 1, cols);
-      const newRows = clamp(startRows + Math.round(dy / (cellH + GAP)), 1, 6);
+      // colSpan capped at per-lane cols so a single tile never escapes its lane
+      const newCols = clamp(startCols + Math.round(dx / (cellW + GAP)), 1, capCols);
+      const newRows = capRows === Infinity
+        ? Math.max(1, startRows + Math.round(dy / (cellH + GAP)))
+        : clamp(startRows + Math.round(dy / (cellH + GAP)), 1, capRows);
       if (newCols !== tile.colSpan || newRows !== tile.rowSpan) {
         tile.colSpan = newCols;
         tile.rowSpan = newRows;
@@ -1793,16 +1795,20 @@
     if (lanes.length > 0) {
       const scroller = el('div', 'gantt-scroll');
 
-      // Each lane gets a comfortable minimum width so a tile inside it stays
-      // legible (each lane has `cols` sub-columns, same as a bento period).
-      // Below this width the gantt scrolls horizontally — expected UX.
-      const minLanePx = window.innerWidth <= 640 ? 360 : window.innerWidth <= 1024 ? 480 : 600;
-      const minTotal = `${minLanePx * lanes.length}px`;
+      // Gantt uses at most 4 columns per lane so each lane is narrower and
+      // more periods fit on screen without horizontal scrolling becoming extreme.
+      // Tiles with colSpan > 4 are clamped to 4 for layout only.
+      const ganttCols = Math.min(cols, 4);
+
+      // Match Bento's natural per-column pixel width for the ganttCols-wide lanes.
+      const appEl = document.getElementById('app');
+      const appWidth = appEl ? appEl.clientWidth : window.innerWidth - 56;
+      const colPx = Math.max(80, Math.floor((appWidth - (cols - 1) * GAP) / cols));
+      const laneWidthPx = ganttCols * colPx + (ganttCols - 1) * GAP;
 
       // Lane headers row — same period heads as bento, side by side.
       const headerRow = el('div', 'gantt-lane-headers');
-      headerRow.style.gridTemplateColumns = `repeat(${lanes.length}, 1fr)`;
-      headerRow.style.minWidth = minTotal;
+      headerRow.style.gridTemplateColumns = `repeat(${lanes.length}, ${laneWidthPx}px)`;
       for (const lane of lanes) {
         const wrap = el('div', 'gantt-lane-head' + (lane.period.archived ? ' archived' : ''));
         wrap.appendChild(buildPeriodHead(lane.period, lane.si));
@@ -1811,17 +1817,16 @@
       scroller.appendChild(headerRow);
 
       // Unified grid.
-      const layout = layoutGanttGrid(lanes, cols);
+      const layout = layoutGanttGrid(lanes, ganttCols);
       const grid = el('div', 'gantt-grid');
-      grid.style.gridTemplateColumns = `repeat(${layout.totalCols}, 1fr)`;
-      grid.style.minWidth = minTotal;
+      grid.style.gridTemplateColumns = `repeat(${layout.totalCols}, ${colPx}px)`;
 
       // Lane separators (decorative thin vertical rules at lane boundaries).
       // Use grid-row: 1 / -1 spanning all rows; place between lanes.
       const totalRowsForSep = Math.max(1, layout.totalRows + 1);
       for (let i = 1; i < layout.numLanes; i++) {
         const sep = el('div', 'gantt-lane-sep');
-        sep.style.gridColumn = `${i * cols + 1}`;
+        sep.style.gridColumn = `${i * ganttCols + 1}`;
         sep.style.gridRow = `1 / ${totalRowsForSep + 1}`;
         grid.appendChild(sep);
       }
@@ -1829,7 +1834,8 @@
       // Singles (regular tiles inside a single period).
       for (const p of layout.placements) {
         const lane = lanes[p.lane];
-        grid.appendChild(renderCard(p.tile, lane.period, lane.si, p, { gridCols: layout.totalCols }));
+        grid.appendChild(renderCard(p.tile, lane.period, lane.si, p,
+          { gridCols: layout.totalCols, laneCols: ganttCols, maxRows: Infinity }));
       }
 
       // Group bars (single continuous bar across multiple lanes).
@@ -1842,6 +1848,8 @@
           isGroupBar: true,
           members: dotMembers,
           gridCols: layout.totalCols,
+          laneCols: ganttCols,
+          maxRows: Infinity,
         }));
       }
 
@@ -1870,6 +1878,8 @@
     opts = opts || {};
     const isGroupBar = !!opts.isGroupBar;
     const gridCols = opts.gridCols || cols;
+    const laneCols = opts.laneCols || cols;
+    const maxRows  = opts.maxRows  !== undefined ? opts.maxRows : 6;
     const members = opts.members || (tile.taskGroupId ? taskGroupsCache.get(tile.taskGroupId) : null);
     const currentIdx = members ? members.findIndex(m => m.tile.id === tile.id) : -1;
 
@@ -2008,7 +2018,7 @@
       rh.setAttribute('role', 'button');
       rh.setAttribute('aria-label', 'Resize tile');
       rh.setAttribute('tabindex', '0');
-      rh.addEventListener('mousedown', (e) => startResize(e, tile, card, gridCols));
+      rh.addEventListener('mousedown', (e) => startResize(e, tile, card, gridCols, laneCols, maxRows));
     }
 
     const dotsEl = members && members.length >= 2 ? renderDots(members, currentIdx) : null;
